@@ -86,15 +86,6 @@ for user in user_data:
     user_id = user[0]
     coll_id = user[1]
 
-    #this chunk creates the likes
-    try:
-      query = ("INSERT INTO likes (animal_type, user_id, collective_id) VALUES (%s, %s, %s)")
-      args = (animal, user_id, coll_id)
-      cursor.execute(query, args)
-      db.commit()
-    except mysql.connector.Error as err:
-      print(err.msg)
-
     #checks for potential matches
     try:
       query = ("SELECT * FROM likes WHERE animal_type = %s AND collective_id = %s")
@@ -122,6 +113,24 @@ for user in user_data:
           print(err.msg)
     except mysql.connector.Error as err:
       print(err.msg)
-print('\n--- likes and matches added ---\n')
+    
+        #this chunk creates the likes
 
-#pandas
+    try:
+      query = ("SELECT * FROM likes WHERE animal_type = %s AND user_id = %s")
+      args = (animal, user_id)
+      cursor.execute(query, args)
+      existing_likes = cursor.fetchall()
+      if(len(existing_likes)==0):
+        try:
+          query = ("INSERT INTO likes (animal_type, user_id, collective_id) VALUES (%s, %s, %s)")
+          args = (animal, user_id, coll_id)
+          cursor.execute(query, args)
+          db.commit()
+        except mysql.connector.Error as err:
+          print(err.msg)
+      elif(len(existing_likes)>0):
+        print(f"like {animal}, {user_id} already exists")
+    except mysql.connector.Error as err:
+      print(err.msg)
+print('\n--- likes and matches added ---\n')
